@@ -79,25 +79,59 @@ class Stench(mesa.Agent):
 
 class WompusWorld(mesa.Model):
     """A model with some number of agents."""
-    def __init__(self, totalAgents=100, width=20, height=20):
+    def __init__(self, gold_count=1,pit_count=2,wumpus_count=3, width=20, height=20):
         super().__init__()
-        self.total_agents = totalAgents
         self.grid = mesa.space.MultiGrid(width, height, True)
-        
+        self.gold_count = gold_count
+        self.wumpus_count = wumpus_count
+        self.pit_count = pit_count
         
         # create one hero agent
         agent = HeroAgent(self)
         self.grid.place_agent(agent,(0,0)) #place agent at 0,0
     
-        # # Create agents
-        # for i in range(self.total_agents):
-        #     agent = HeroAgent(self)
+        # randomly put gold 
+        for i in range(self.gold_count):
+            agent = Gold(self)
 
-        #     # Add the agent to a random grid cell
-        #     x = self.random.randrange(self.grid.width)
-        #     y = self.random.randrange(self.grid.height)
-        #     self.grid.place_agent(agent, (x, y))
+            # Add the agent to a random grid cell
+            x = self.random.randrange(self.grid.width)
+            y = self.random.randrange(self.grid.height)
+            self.grid.place_agent(agent, (x, y))
+        
+        for i in range(self.pit_count):
+            agent = Pit(self)
 
+            # Add the agent to a random grid cell
+            x = self.random.randrange(self.grid.width)
+            y = self.random.randrange(self.grid.height)
+            self.grid.place_agent(agent, (x, y))
+            #place breeze next to the pits
+            neighbours = self.grid.get_neighborhood(
+                                (x,y),
+                                moore=False,
+                                include_center=False)
+            for pos in neighbours:
+                breeze = Breeze(self)
+                self.grid.place_agent(breeze,pos)
+            
+
+        for i in range(self.wumpus_count):
+            agent = Wumpus(self)
+
+            # Add the agent to a random grid cell
+            x = self.random.randrange(self.grid.width)
+            y = self.random.randrange(self.grid.height)
+            self.grid.place_agent(agent, (x, y))
+            #place stench next to wumpus
+            neighbours = self.grid.get_neighborhood(
+                                (x,y),
+                                moore=False,
+                                include_center=False)
+            for pos in neighbours:
+                breeze = Stench(self)
+                self.grid.place_agent(breeze,pos)
+    
         self.running = True
 
        
@@ -109,14 +143,7 @@ class WompusWorld(mesa.Model):
 
 
 model_params = {
-    "totalAgents": {
-        "type": "SliderInt",
-        "value": 3,
-        "label": "Number of agents:",
-        "min": 1,
-        "max": 10,
-        "step": 1,
-    },
+  
     "width": {
         "type": "SliderInt",
         "value": 20,
@@ -133,23 +160,51 @@ model_params = {
         "max": 100,
         "step": 10,
     },
+     "gold_count": {
+        "type": "SliderInt",
+        "value": 20,
+        "label": "Count of Gold:",
+        "min": 10,
+        "max": 100,
+        "step": 10,
+    },
+     "wumpus_count": {
+        "type": "SliderInt",
+        "value": 20,
+        "label": "Count of Wumpus:",
+        "min": 10,
+        "max": 100,
+        "step": 10,
+    },
+     "pit_count": {
+        "type": "SliderInt",
+        "value": 20,
+        "label": "Count of Pit",
+        "min": 10,
+        "max": 100,
+        "step": 10,
+    },
+    
 }
 
-#modify this function to change output on grid
-def agent_portrayal(agent):
-    size = 10
-    color = "tab:red"
 
-    if agent.wealth > 3:
-        size = 80
-        color = "tab:blue"
-    elif agent.wealth > 2:
-        size = 50
-        color = "tab:green"
-    elif agent.wealth > 1:
-        size = 20
-        color = "tab:orange"
-    return {"size": size, "color": color}
+def agent_portrayal(agent):
+    portrayal = {"size": 40, "color": "gray", "shape": "circle"}
+    
+    if isinstance(agent, HeroAgent):
+        portrayal.update({"color": "blue", "size": 60, "shape": "rect"})
+    elif isinstance(agent, Gold):
+        portrayal.update({"color": "gold", "shape": "star"})
+    elif isinstance(agent, Wumpus):
+        portrayal.update({"color": "red", "shape": "triangle"})
+    elif isinstance(agent, Pit):
+        portrayal.update({"color": "black", "shape": "hexagon"})
+    elif isinstance(agent, Breeze):
+        portrayal.update({"color": "lightblue", "size": 20, "shape": "circle"})
+    elif isinstance(agent, Stench):
+        portrayal.update({"color": "darkgreen", "size": 20, "shape": "triangle"})
+        
+    return portrayal
 
 money_model = WompusWorld(3, 4, 4)
 
