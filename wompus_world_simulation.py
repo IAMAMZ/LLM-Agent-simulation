@@ -90,7 +90,7 @@ class WompusWorld(mesa.Model):
         agent = HeroAgent(self)
         self.grid.place_agent(agent,(0,0)) #place agent at 0,0
     
-        # randomly put gold 
+        # randomly put gold a
         for i in range(self.gold_count):
             agent = Gold(self)
 

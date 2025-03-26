@@ -131,6 +131,29 @@ class WumpusWorld(Model):
         self.running = True
         self.datacollector.collect(self)
 
+        if torch.cuda.is_available():
+            for i in range(torch.cuda.device_count()):
+                print(i, torch.cuda.get_device_properties(i))
+
+        torch.random.manual_seed(0)
+
+        model_path = "microsoft/Phi-4-mini-instruct"
+
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            device_map="cuda:0", # "cpu" or "auto" or "cuda:0" for cuda device 0, 1, 2, 3 etc. if you have multiple GPUs
+            torch_dtype="auto",
+            trust_remote_code=True
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+
+        #gotta have a tokenizer for each model otherwise the token mappings won't match
+        self.pipe = pipeline(
+            "text-generation",
+            model=self.model,
+            tokenizer=self.tokenizer
+        )
+
     def step(self):
         """Execute one step of the model."""
         # First activate all sheep, then all wolves, both in random order
