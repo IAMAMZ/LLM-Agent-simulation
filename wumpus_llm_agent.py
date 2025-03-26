@@ -5,94 +5,168 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-
+import re 
 from mesa.datacollection import DataCollector
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component
+import sys
+import datetime
 
-
+def log_message(*args, **kwargs):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    message = ' '.join(map(str, args))
+    formatted_message = f"{timestamp} - {message}"
+    print(formatted_message, **kwargs)
+    with open("wumpus_log.txt", "a") as f:
+        f.write(formatted_message + "\n")
 
 class HeroAgent(mesa.Agent):
     """A hero Agent"""
     def __init__(self, model):
-        # Pass the parameters to the parent class.
         super().__init__(model)
-        self.pathHistory = [] # this is to store the history of the hero agent
+        
+        self.position_history = []
+        self.visited_cells = set([(0,0)]) 
+        self.previous_action = None 
+        self.arrows = 5 # agent has 5 arrows
 
-
+  
     def step(self):
-        current_step = self.model.steps
+        current_step = self.model.steps 
         print(f"\n=== STEP {current_step} ===")
         print(f"Hero at position: {self.pos}")
-        
+        self.visited_cells.add(self.pos) 
+
+        # check what agents are in current cell,
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
+        current_perceptions = [] # store what you precieve in text for llm
+        game_over = False
         for cellmate in cellmates:
             if isinstance(cellmate, Gold):
                 print("!!! FOUND GOLD - YOU WIN !!!")
                 self.model.running = False
+                game_over = True
+                break
             elif isinstance(cellmate, Pit):
                 print("!!! FELL IN PIT - GAME OVER !!!")
                 self.model.running = False
+                game_over = True
+                break
             elif isinstance(cellmate, Wumpus) and not cellmate.isDead:
                 print("!!! ENCOUNTERED LIVE WUMPUS - GAME OVER !!!")
                 self.model.running = False
+                game_over = True
+                break
             elif isinstance(cellmate, Breeze):
                 print("You feel a breeze...")
+                if "breeze" not in current_perceptions: current_perceptions.append("breeze")
             elif isinstance(cellmate, Stench):
                 print("You smell something terrible...")
-        
-        self.move()
-      
+                if "stench" not in current_perceptions: current_perceptions.append("stench")
 
-    def move(self):
-        possible_steps = self.model.grid.get_neighborhood(
-            self.pos,
-            moore=True,
-            include_center=False)
-        perceptions = []
-        cellmates = self.model.grid.get_cell_list_contents([self.pos])
-        for cellmate in cellmates:
-            if isinstance(cellmate, Breeze):
-                perceptions.append("breeze")
-            elif isinstance(cellmate, Stench):
-                perceptions.append("stench")
-        prompt = f"""You are in a {self.model.grid.width}x{self.model.grid.height} grid. 
-                    Current position: {self.pos}
-                    Perceptions: {', '.join(perceptions) if perceptions else 'none'}
-                    Possible moves: right, left, up, down
-                    you must make a move
+        if game_over:
+            return 
+
+        self.decide_move(current_perceptions)
+
+
+    def decide_move(self, perceptions):
+
+        self.position_history.append(str(self.pos) +" "  ''.join(perceptions))       
+        potential_moves = self.get_potential_moves()
+        neighbor_info = []
+        for move_dir, next_pos in potential_moves.items():
+            status = "unvisited"
+            if next_pos in self.visited_cells:
+                status = "visited"
+            neighbor_info.append(f"{move_dir} to {next_pos} ({status})")
+
+        # --- Construct the Enhanced Prompt ---
+        prompt = f"""You are an agent exploring a {self.model.grid.width}x{self.model.grid.height} grid world (coordinates from (0,0) to ({self.model.grid.width-1},{self.model.grid.height-1})).
+                    Goal: Find the Gold. Avoid Pits and the Wumpus.
+                    Rules:
+                    - A Breeze indicates a Pit in an adjacent square (up, down, left, or right).
+                    - A Stench indicates a Wumpus in an adjacent square (up, down, left, or right).
+                    - Moving into a Pit or Wumpus square ends the game.
+
+                    Current State:
+                    - Position: {self.pos}
+                    - Perceptions at current position: {', '.join(perceptions) if perceptions else 'none'}
+                    - Cells already visited: {sorted(list(self.visited_cells))}
+                    - Recent positions (last 5): {self.position_history[-5:]}
+                    - Arrows left: {str(self.arrows)}
+
+                    Possible Moves from {self.pos}:
+                    - {', '.join(neighbor_info)}
+                    - 'shoot <direction>' is also a possible command if you suspect a Wumpus.
+
+                    Task: Analyze the situation and choose the next action. Prioritize exploring safe, unvisited squares. Avoid moving back to the immediately previous square ({self.position_history[-2] if len(self.position_history)>1 else 'N/A'}) unless there's a strong reason (e.g., all other options seem dangerous or are visited). If you suspect a Wumpus, consider shooting. Explain your reasoning clearly.
 
                     Format your response EXACTLY like this:
-                    Reasoning: [Your analysis here]
-                    Command: [ONLY one of: right/left/up/down]"""
-                    
-        ans = self.model.PromptModel(
-                f"Agent {self.unique_id} in {self.model.grid.width}x{self.model.grid.height} Wumpus World",
-                "History: " + " ".join(self.pathHistory[-5:]),  # Last 5 entries
-                prompt
-            )
-        print(f"AI suggests: {ans}")   
-        # Parse command from response
-        command = self.parse_command(ans)
-            
-         # Execute command
-        self.execute_command(command)
-            
-         # Update history
-        self.pathHistory.append(f"AI Decision: {ans} | Executed: {command}")
+                    Reasoning: [Your detailed analysis of perceptions, visited cells, potential risks/rewards of neighbors, and strategic choice]
+                    Command: [ONLY one of: right | left | up | down | shoot right | shoot left | shoot up | shoot down]""" # Added shoot options
 
+      
+        # call the llm
+        context_msg = f"Agent {self.unique_id} in {self.model.grid.width}x{self.model.grid.height} Wumpus World. Step {self.model.steps}."
+        memory_msg = f"Visited cells: {sorted(list(self.visited_cells))}" 
+
+        ans = self.model.PromptModel(
+            context_msg,
+            memory_msg, 
+            prompt
+        )
+        print(f"LLM Raw Response:\n{ans}")
+
+    
+        command = self.parse_command(ans)
+      
+
+        self.execute_command(command)
+  
+
+    def get_potential_moves(self):
+        """ Calculates the coordinates for possible moves (right, left, up, down). """
+        x, y = self.pos
+        width = self.model.grid.width
+        height = self.model.grid.height
+        # Uses modulo for grid wrapping
+        potential = {
+            "right": ((x + 1) % width, y),
+            "left": ((x - 1 + width) % width, y), # Ensure positive index before modulo
+            "up": (x, (y + 1) % height),
+            "down": (x, (y - 1 + height) % height), # Ensure positive index before modulo
+        }
+        return potential
+
+    # Inside the HeroAgent class:
     def parse_command(self, response):
-        response = response.lower()
-        commands = ["right", "left", "up", "down", "shoot"]
-        
-        # Look for command patterns
-        for cmd in commands:
-            if f"command: {cmd}" in response:
-                return cmd
-        # in case there are duplicate commands return first command
-        for word in response.split():
-            if word in commands:
+        """
+        Parses the command from the LLM response using regex first,
+        then falls back to finding the first command word.
+        """
+        response = response.strip() 
+
+        # user regex to find command
+        match = re.search(r"Command:\s*(right|left|up|down|shoot)\b", response, re.IGNORECASE)
+        if match:
+            command = match.group(1).lower() 
+            # check if command is valid
+            if command in ["right", "left", "up", "down", "shoot"]:
+                print(f"Parsed command via regex: {command}")
+                return command
+
+        # fallback: find the first occurrence of a command word
+
+        print("Warning: Could not parse command using 'Command:' format. Falling back to first keyword.")
+        words = response.lower().split()
+        for word in words:
+            if word in ["right", "left", "up", "down", "shoot"]:
+                print(f"Parsed command via fallback: {word}")
                 return word
-        return "stay"  # stay if no matching command
+
+        # stay if nothing is found, but put warning
+        print("Warning: No valid command found in response. Defaulting to 'stay'.")
+        return "stay"
 
     def execute_command(self, command):
         x, y = self.pos
@@ -107,11 +181,39 @@ class HeroAgent(mesa.Agent):
             "stay": (x, y)
         }
         
-        new_pos = move_map.get(command, (x, y))
-        print(f"Moving from {(x,y)} → {new_pos}")
-        self.model.grid.move_agent(self, new_pos)
+        if command not in move_map:
+            self.shootWompus(command)
+        else:
+            new_pos = move_map.get(command, (x, y))
+            self.visited_cells.add(new_pos)
+            print(f"Moving from {(x,y)} → {new_pos}")
+            self.model.grid.move_agent(self, new_pos)
         
-    
+    def shootWompus(self,direction):
+        # get all neighbours
+        possible_neighboorCoordinate_dic = self.get_potential_moves()
+        cellToKill = None
+        if direction=="shoot right":
+            cellToKill="right"
+        elif direction == "shoot left":
+            cellToKill = "left"
+        elif direction == "shoot up":
+            cellToKill = "up"
+        elif direction == "shoot down":
+            cellToKill = "down"
+        
+        # get coordinates of cell to kill
+        if cellToKill==None:
+            return
+        kill_coordinates = possible_neighboorCoordinate_dic[cellToKill]
+        target_agents = self.model.grid.get_cell_list_contents([kill_coordinates])
+        for a in target_agents:
+            if isinstance(a,Wumpus):
+                a.kill_wompus()
+                print("wompus at ", a.pos, " eleminated")
+                self.arrows-=1
+
+
 class Wumpus(mesa.Agent):
  
     def __init__(self, model):
@@ -161,9 +263,9 @@ class Stench(mesa.Agent):
         # Create the agent's variable and set the initial values.
         self.wealth = 1
 
-class WompusWorld(mesa.Model):
+class WumpusWorld(mesa.Model):
     """A model with some number of agents."""
-    def __init__(self, gold_count=1,pit_count=2,wumpus_count=3, width=5, height=5):
+    def __init__(self, gold_count=1,pit_count=1,wumpus_count=1, width=8, height=8):
         super().__init__()
         self.grid = mesa.space.MultiGrid(width, height, True)
         self.gold_count = gold_count
@@ -254,9 +356,9 @@ class WompusWorld(mesa.Model):
         
         #lower temperature generally more predictable results, you can experiment with this
         generation_args = {
-            "max_new_tokens": 200,
+            "max_new_tokens": 500,
             "return_full_text": False,
-            "temperature": 0.2,
+            "temperature": 0.0,
             "do_sample": False,
         }
 
@@ -281,7 +383,7 @@ class WompusWorld(mesa.Model):
         #self.datacollector.collect(self)
         self.agents.shuffle_do("step")
     def add_log(self, message):
-        step = self.schedule.steps
+        step = self.steps
         self.log.append(f"Step {step}: {message}")
         print(f"Step {step}: {message}") 
 
@@ -348,27 +450,36 @@ def agent_portrayal(agent):
     portrayal = {"size": 40, "color": "gray", "shape": "circle"}
     
     if isinstance(agent, HeroAgent):
-        portrayal.update({"color": "blue", "size": 60, "shape": "rect"})
+        portrayal["color"] = "cyan"
+        portrayal["marker"] = "*"
+        portrayal["zorder"] = 3
+        portrayal["size"] = 40
     elif isinstance(agent, Gold):
-        portrayal.update({"color": "gold", "shape": "star"})
+        portrayal["color"] = "gold"
+        portrayal["marker"] = "P"
+        portrayal["zorder"] = 2
+        portrayal["size"] = 10
     elif isinstance(agent, Wumpus):
-        portrayal.update({"color": "red", "shape": "triangle"})
+        portrayal["color"] = "red"
+        portrayal["marker"] = "s"
+        portrayal["zorder"] = 2
+        portrayal["size"] = 30
     elif isinstance(agent, Pit):
         portrayal.update({"color": "black", "shape": "hexagon"})
     elif isinstance(agent, Breeze):
-        portrayal.update({"color": "lightblue", "size": 20, "shape": "circle"})
+        portrayal.update({"color": "lightblue", "size": 30, "shape": "circle"})
     elif isinstance(agent, Stench):
-        portrayal.update({"color": "darkgreen", "size": 20, "shape": "triangle"})
+        portrayal.update({"color": "darkgreen", "size": 30, "shape": "triangle"})
         
     return portrayal
 
-money_model = WompusWorld(3, 4, 4)
+wumpus_model = WumpusWorld(3, 4, 4)
 
 SpaceGraph = make_space_component(agent_portrayal)
 
 
 page = SolaraViz(
-    money_model,
+    wumpus_model,
     components=[SpaceGraph],
     model_params=model_params,
     name="Money Model"
