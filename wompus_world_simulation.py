@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-from mesa.datacollection import DataCollector
+
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component
 
 
@@ -33,23 +33,14 @@ class HeroAgent(mesa.Agent):
         self.model.grid.move_agent(self, new_position)
 
 class Wumpus(mesa.Agent):
- 
     def __init__(self, model):
         # Pass the parameters to the parent class.
         super().__init__(model)
-
-     
-
-
-
 
 class Gold(mesa.Agent):
-  
     def __init__(self, model):
         # Pass the parameters to the parent class.
         super().__init__(model)
-
-
 
 class Pit(mesa.Agent):
     """A hero Agent"""
@@ -57,16 +48,11 @@ class Pit(mesa.Agent):
         # Pass the parameters to the parent class.
         super().__init__(model)
 
-     
-
-
 class Breeze(mesa.Agent):
     """A hero Agent"""
     def __init__(self, model):
         # Pass the parameters to the parent class.
         super().__init__(model)
-
-
   
 class Stench(mesa.Agent):
     """A hero Agent"""
@@ -143,7 +129,6 @@ class WompusWorld(mesa.Model):
 
 
 model_params = {
-  
     "width": {
         "type": "SliderInt",
         "value": 20,

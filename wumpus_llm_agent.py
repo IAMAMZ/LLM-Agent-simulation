@@ -16,7 +16,7 @@ def log_message(*args, **kwargs):
     message = ' '.join(map(str, args))
     formatted_message = f"{timestamp} - {message}"
     print(formatted_message, **kwargs)
-    with open("wumpus_log.txt", "a") as f:
+    with open("wumpus_log.txt", "a", encoding="utf-8", newline="\n") as f:
         f.write(formatted_message + "\n")
 
 class HeroAgent(mesa.Agent):
@@ -32,8 +32,8 @@ class HeroAgent(mesa.Agent):
   
     def step(self):
         current_step = self.model.steps 
-        print(f"\n=== STEP {current_step} ===")
-        print(f"Hero at position: {self.pos}")
+        log_message(f"\n=== STEP {current_step} ===")
+        log_message(f"Hero at position: {self.pos}")
         self.visited_cells.add(self.pos) 
 
         # check what agents are in current cell,
@@ -42,25 +42,25 @@ class HeroAgent(mesa.Agent):
         game_over = False
         for cellmate in cellmates:
             if isinstance(cellmate, Gold):
-                print("!!! FOUND GOLD - YOU WIN !!!")
+                log_message("!!! FOUND GOLD - YOU WIN !!!")
                 self.model.running = False
                 game_over = True
                 break
             elif isinstance(cellmate, Pit):
-                print("!!! FELL IN PIT - GAME OVER !!!")
+                log_message("!!! FELL IN PIT - GAME OVER !!!")
                 self.model.running = False
                 game_over = True
                 break
             elif isinstance(cellmate, Wumpus) and not cellmate.isDead:
-                print("!!! ENCOUNTERED LIVE WUMPUS - GAME OVER !!!")
+                log_message("!!! ENCOUNTERED LIVE WUMPUS - GAME OVER !!!")
                 self.model.running = False
                 game_over = True
                 break
             elif isinstance(cellmate, Breeze):
-                print("You feel a breeze...")
+                log_message("You feel a breeze...")
                 if "breeze" not in current_perceptions: current_perceptions.append("breeze")
             elif isinstance(cellmate, Stench):
-                print("You smell something terrible...")
+                log_message("You smell something terrible...")
                 if "stench" not in current_perceptions: current_perceptions.append("stench")
 
         if game_over:
@@ -70,7 +70,7 @@ class HeroAgent(mesa.Agent):
 
 
     def decide_move(self, perceptions):
-
+        
         self.position_history.append(str(self.pos) +" "  ''.join(perceptions))       
         potential_moves = self.get_potential_moves()
         neighbor_info = []
@@ -80,13 +80,14 @@ class HeroAgent(mesa.Agent):
                 status = "visited"
             neighbor_info.append(f"{move_dir} to {next_pos} ({status})")
 
-        # --- Construct the Enhanced Prompt ---
         prompt = f"""You are an agent exploring a {self.model.grid.width}x{self.model.grid.height} grid world (coordinates from (0,0) to ({self.model.grid.width-1},{self.model.grid.height-1})).
                     Goal: Find the Gold. Avoid Pits and the Wumpus.
                     Rules:
                     - A Breeze indicates a Pit in an adjacent square (up, down, left, or right).
                     - A Stench indicates a Wumpus in an adjacent square (up, down, left, or right).
                     - Moving into a Pit or Wumpus square ends the game.
+                    - when you encounter a breeze move towards a safer place 
+                    - when you encounter a smell move towareds a safe place or shoot arrows
 
                     Current State:
                     - Position: {self.pos}
@@ -103,8 +104,7 @@ class HeroAgent(mesa.Agent):
 
                     Format your response EXACTLY like this:
                     Reasoning: [Your detailed analysis of perceptions, visited cells, potential risks/rewards of neighbors, and strategic choice]
-                    Command: [ONLY one of: right | left | up | down | shoot right | shoot left | shoot up | shoot down]""" # Added shoot options
-
+                    Command: [ONLY one of: right | left | up | down | shoot right | shoot left | shoot up | shoot down]""" 
       
         # call the llm
         context_msg = f"Agent {self.unique_id} in {self.model.grid.width}x{self.model.grid.height} Wumpus World. Step {self.model.steps}."
@@ -115,7 +115,7 @@ class HeroAgent(mesa.Agent):
             memory_msg, 
             prompt
         )
-        print(f"LLM Raw Response:\n{ans}")
+        log_message(f"LLM Raw Response:\n{ans}")
 
     
         command = self.parse_command(ans)
@@ -138,7 +138,6 @@ class HeroAgent(mesa.Agent):
         }
         return potential
 
-    # Inside the HeroAgent class:
     def parse_command(self, response):
         """
         Parses the command from the LLM response using regex first,
@@ -152,20 +151,20 @@ class HeroAgent(mesa.Agent):
             command = match.group(1).lower() 
             # check if command is valid
             if command in ["right", "left", "up", "down", "shoot"]:
-                print(f"Parsed command via regex: {command}")
+                log_message(f"Parsed command via regex: {command}")
                 return command
 
         # fallback: find the first occurrence of a command word
 
-        print("Warning: Could not parse command using 'Command:' format. Falling back to first keyword.")
+        log_message("Warning: Could not parse command using 'Command:' format. Falling back to first keyword.")
         words = response.lower().split()
         for word in words:
             if word in ["right", "left", "up", "down", "shoot"]:
-                print(f"Parsed command via fallback: {word}")
+                log_message(f"Parsed command via fallback: {word}")
                 return word
 
         # stay if nothing is found, but put warning
-        print("Warning: No valid command found in response. Defaulting to 'stay'.")
+        log_message("Warning: No valid command found in response. Defaulting to 'stay'.")
         return "stay"
 
     def execute_command(self, command):
@@ -186,7 +185,7 @@ class HeroAgent(mesa.Agent):
         else:
             new_pos = move_map.get(command, (x, y))
             self.visited_cells.add(new_pos)
-            print(f"Moving from {(x,y)} → {new_pos}")
+            log_message(f"Moving from {(x,y)} to {new_pos}")
             self.model.grid.move_agent(self, new_pos)
         
     def shootWompus(self,direction):
@@ -210,12 +209,11 @@ class HeroAgent(mesa.Agent):
         for a in target_agents:
             if isinstance(a,Wumpus):
                 a.kill_wompus()
-                print("wompus at ", a.pos, " eleminated")
+                log_message(f"wompus at {a.pos} eliminated") 
                 self.arrows-=1
 
 
-class Wumpus(mesa.Agent):
- 
+class Wumpus(mesa.Agent): 
     def __init__(self, model):
         # Pass the parameters to the parent class.
         super().__init__(model)
@@ -224,44 +222,21 @@ class Wumpus(mesa.Agent):
     def kill_wompus(self):
         self.isDead = True
 
-     
-
-
-
-
 class Gold(mesa.Agent):
-  
     def __init__(self, model):
-        # Pass the parameters to the parent class.
         super().__init__(model)
-
-
 
 class Pit(mesa.Agent):
-    """A hero Agent"""
     def __init__(self, model):
-        # Pass the parameters to the parent class.
         super().__init__(model)
-
-     
-
 
 class Breeze(mesa.Agent):
-    """A hero Agent"""
     def __init__(self, model):
-        # Pass the parameters to the parent class.
         super().__init__(model)
 
-
-  
 class Stench(mesa.Agent):
-    """A hero Agent"""
     def __init__(self, model):
-        # Pass the parameters to the parent class.
         super().__init__(model)
-
-        # Create the agent's variable and set the initial values.
-        self.wealth = 1
 
 class WumpusWorld(mesa.Model):
     """A model with some number of agents."""
@@ -329,7 +304,7 @@ class WumpusWorld(mesa.Model):
         self.running = True
         if torch.cuda.is_available():
             for i in range(torch.cuda.device_count()):
-                print(i, torch.cuda.get_device_properties(i))
+                log_message(i, torch.cuda.get_device_properties(i))
 
         torch.random.manual_seed(0)
 
@@ -376,7 +351,7 @@ class WumpusWorld(mesa.Model):
         return output[0]['generated_text']
 
         #time2 = int(round(time.time() * 1000))
-        #print("Generation time: " + str(time2 - time1))
+        #log_message("Generation time: " + str(time2 - time1))
         #self.datacollector.collect(self)
     def step(self):
         """Advance the model by one step."""
@@ -385,7 +360,7 @@ class WumpusWorld(mesa.Model):
     def add_log(self, message):
         step = self.steps
         self.log.append(f"Step {step}: {message}")
-        print(f"Step {step}: {message}") 
+        log_message(f"Step {step}: {message}") 
 
 
 model_params = {
