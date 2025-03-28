@@ -1,23 +1,24 @@
 import mesa
-import seaborn as sns
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+import seaborn 
+import numpy 
+import pandas 
+import matplotlib.pyplot 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import re 
 from mesa.datacollection import DataCollector
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component
-import sys
 import datetime
 
 def log_message(*args, **kwargs):
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now().strftime("%m-%d %H:%M:%S.%f")[:-3]
     message = ' '.join(map(str, args))
-    formatted_message = f"{timestamp} - {message}"
+    formatted_message = f"[{timestamp}] {message}"
     print(formatted_message, **kwargs)
     with open("wumpus_log.txt", "a", encoding="utf-8", newline="\n") as f:
         f.write(formatted_message + "\n")
+
+
 
 class HeroAgent(mesa.Agent):
     """A hero Agent"""
