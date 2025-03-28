@@ -1,67 +1,170 @@
-2025-03-27 13:27:10 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
-2025-03-27 13:27:23 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
-2025-03-27 13:27:35 - 
- === STEP 4 === 
+03-27 23:44:59 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
+03-27 23:45:10 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
+03-27 23:45:40 - 
+ === agent 3 thought process to move LLM Raw Response:
+Reasoning: Currently at (6, 7) with 15 shots left, I need to avoid zombies and reach the goal. Moving right to (7, 7) would place me at the edge of the grid, limiting future movement options. Moving left to (5, 7) would also place me at the edge. Moving up to (6, 0) would take me to the top row, which might be advantageous for avoiding zombies. Moving down to (6,  === 
 
-2025-03-27 13:27:35 - chat between 4 and 1 at (1, 8) 
-2025-03-27 13:27:39 - Question by: 4 Hey $1, it's good to see another human around. How are you holding up in this zombie apocalypse? Any safe spots you've found yet?
-2025-03-27 13:27:42 - Answer by: 1 Hey $4, I'm glad to see another human around too. It's been tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say
-2025-03-27 13:27:42 - 
- === STEP 34 === 
+03-27 23:45:40 - Parsed command via fallback: right
+03-27 23:45:40 - Moving from (6, 7) to (7, 7)
+03-27 23:45:45 - 
+ === agent 2 thought process to move LLM Raw Response:
+Reasoning: Currently positioned at (4, 5) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (5, 5) keeps me in the center, maintaining a good position to collaborate with humans. Moving left to (3, 5) or down to (4, 4) would bring me closer to the edges, increasing the risk of encountering zombies. Moving up to (4, 6) also keeps me central but slightly === 
 
-2025-03-27 13:27:42 - chat between 4 and 1 at (8, 5) 
-2025-03-27 13:27:46 - Question by: 4 Agent 4: Hey $1, it's good to see you out here. How have you been holding up in this zombie apocalypse? I've been trying to find a safe place to stay and scavenge for supplies. It's tough out here, but
-2025-03-27 13:27:49 - Answer by: 1 Agent 1: Hey $4, it's good to see you out here too. It's been tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay.
-2025-03-27 13:27:49 - 
- === STEP 248 === 
+03-27 23:45:45 - Parsed command via fallback: right
+03-27 23:45:45 - Moving from (4, 5) to (5, 5)
+03-27 23:45:50 - 
+ === agent 4 thought process to move LLM Raw Response:
+Reasoning: Currently at (2, 2) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (3, 2) seems safe and keeps me in the center of the grid, allowing for more options in future moves. Moving up to (2, 3) also seems safe and keeps me in the center.
 
-2025-03-27 13:27:49 - chat between 3 and 1 at (8, 6) 
-2025-03-27 13:27:52 - Question by: 3 Hey $1, it's good to see you again. How have you been holding up in the world? Any new safe spots or strategies you've found useful? Let's keep each other updated and stay strong together.
-2025-03-27 13:27:56 - Answer by: 1 Hey $3, it's good to see you again. I've been hanging in there, but it's tough out here. I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm doing my best to
-2025-03-27 13:27:56 - 
- === STEP 308 === 
+Command: right === 
 
-2025-03-27 13:27:56 - chat between 2 and 4 at (3, 3) 
-2025-03-27 13:27:58 - Question by: 2 Hey $4, it's good to see another human around. How are you holding up in this zombie apocalypse? Any safe spots you've found yet?
-2025-03-27 13:28:02 - Answer by: 4 Hey $2, it's good to see another human around too. It's been tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say
-2025-03-27 13:28:02 - 
- === STEP 351 === 
+03-27 23:45:50 - Parsed command via regex: right
+03-27 23:45:50 - Moving from (2, 2) to (3, 2)
+03-27 23:45:57 - 
+ === agent 1 thought process to move LLM Raw Response:
+Reasoning: Currently positioned at (4, 6) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (5, 6) keeps me in the center, avoiding immediate danger. Moving left to (3, 6) or down to (4, 5) also keeps me central, but moving up to (4, 7) might be beneficial for scouting and avoiding zombies.
 
-2025-03-27 13:28:02 - chat between 4 and 1 at (5, 7) 
-2025-03-27 13:28:06 - Question by: 4 Hey $1, it's good to see you out here too. It's been tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say
-2025-03-27 13:28:10 - Answer by: 1 Hey $1, it's good to see you too. It's tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm
-2025-03-27 13:28:10 - 
- === STEP 354 === 
+Command: right === 
 
-2025-03-27 13:28:10 - chat between 4 and 1 at (3, 6) 
-2025-03-27 13:28:13 - Question by: 4 Hey $1, it's good to see you too. It's tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm
-2025-03-27 13:28:17 - Answer by: 1 Hey $1, it's tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm doing my best to stay alive and
-2025-03-27 13:28:17 - 
- === STEP 465 === 
+03-27 23:45:57 - Parsed command via regex: right
+03-27 23:45:57 - Moving from (4, 6) to (5, 6)
+03-27 23:46:02 - 
+ === agent 5 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (2, 4) with 15 shots left. My goal is to survive and collaborate with humans. I need to avoid zombies and make strategic moves. Moving right to (3, 4) seems a safe move as it doesn't lead to any immediate danger. I have not visited (3, 4) before, so it's a new cell.
 
-2025-03-27 13:28:17 - chat between 3 and 4 at (7, 9) 
-2025-03-27 13:28:21 - Question by: 3 Agent 1: Hey $4, it's good to see you again. I've been hanging in there, but it's tough out here. I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm
-2025-03-27 13:28:25 - Answer by: 4 Agent 4: Hey $3, glad to see you too. It's tough out here, but I'm hanging in there. I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm doing my
-2025-03-27 13:28:25 - 
- === STEP 478 === 
+Command: right === 
 
-2025-03-27 13:28:25 - chat between 2 and 1 at (2, 7) 
-2025-03-27 13:28:29 - Question by: 2 Agent 4: Hey $1, it's good to see another human around too. It's been tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay.
-2025-03-27 13:28:32 - Answer by: 1 Hey $2, it's good to see you too. It's tough out here, but I'm hanging in there. As for safe spots, I've been scavenging for supplies and trying to find a secure place to stay. It's hard to say, but I'm
-2025-03-27 13:37:40 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
-2025-03-27 13:37:54 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
-2025-03-27 13:38:07 - 
- === STEP 69 === 
+03-27 23:46:02 - Parsed command via regex: right
+03-27 23:46:02 - Moving from (2, 4) to (3, 4)
+03-27 23:46:08 - 
+ === agent 6 thought process to move LLM Raw Response:
+Reasoning: Currently positioned at (5, 6) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (6, 6) keeps me in the center, maintaining a good position to collaborate with humans. Moving left to (4, 6) or down to (5, 5) would take me closer to the edges, increasing the risk of encountering zombies. Moving up to (5, 7) also keeps me central but slightly === 
 
-2025-03-27 13:38:07 - chat between 1 and 2 at (1, 8) 
-2025-03-27 13:38:13 - Question by: 1 Agent 1: Hey $2, I hope you're doing okay. It's been a while since we last talked. How have you been holding up in this zombie apocalypse?
+03-27 23:46:08 - Parsed command via fallback: right
+03-27 23:46:08 - Moving from (5, 6) to (6, 6)
+03-27 23:46:14 - 
+ === agent 2 thought process to move LLM Raw Response:
+Reasoning: Currently at (5, 5) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (6, 5) keeps me in the center, maintaining a good position to collaborate with humans. Moving left to (4, 5) or down to (5, 4) would move me closer to the edges, increasing the risk of encountering zombies. Moving up to (5, 6) also keeps me in the center. === 
 
-Agent 2: Hey Agent 1, I'm doing alright, considering the circumstances
-2025-03-27 13:38:16 - Answer by: 2 Agent 2: Hey Agent 1, I'm doing alright, considering the circumstances. It's tough out here, but I'm managing. How about you? How have you been holding up in this zombie apocalypse?
-2025-03-27 13:38:16 - 
- === STEP 274 === 
+03-27 23:46:14 - Parsed command via fallback: right
+03-27 23:46:14 - Moving from (5, 5) to (6, 5)
+03-27 23:46:19 - 
+ === agent 4 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (3, 2) with 15 shots left. My goal is to avoid zombies and collaborate with humans. I need to move carefully to avoid being surrounded by zombies. Moving right to (4, 2) seems a safe option as it is not adjacent to any known zombie positions. Moving up to (3, 3) also seems safe and may allow me to explore new areas.
 
-2025-03-27 13:38:16 - chat between 4 and 3 at (4, 4) 
-2025-03-27 13:38:20 - Question by: 4 Hey $3, it's good to see you again. How have you been holding up in the zombie apocalypse? Any new safe zones or survivor groups you've come across? And how about you? Still managing to find food and water? Let's keep each other
-2025-03-27 13:38:24 - Answer by: 3 Hey $3, it's good to see you again. I've been hanging in there, but it's tough. Finding safe zones is like looking for a needle in a haystack. I've come across a few survivor groups, but trust is hard to come by
-2025-03-27 13:38:49 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
+Command: right === 
+
+03-27 23:46:19 - Parsed command via regex: right
+03-27 23:46:19 - Moving from (3, 2) to (4, 2)
+03-27 23:46:24 - 
+ === agent 1 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (5, 6) with 15 shots left. My goal is to survive and collaborate with humans. I need to avoid zombies and make strategic moves. Moving right to (6, 6) seems like a safe move as it is not adjacent to any known zombie locations. Moving up to (5, 7) also seems safe and may help me avoid zombies.
+
+Command: right === 
+
+03-27 23:46:24 - Parsed command via regex: right
+03-27 23:46:24 - Moving from (5, 6) to (6, 6)
+03-27 23:46:30 - 
+ === agent 6 thought process to move LLM Raw Response:
+Reasoning: Currently at (6, 6) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (7, 6) will place me at the edge of the grid, limiting future movement options. Moving left to (5, 6) or down to (6, 5) will keep me within the central area of the grid, allowing more movement options. Moving up to (6, 7) will also keep me in the === 
+
+03-27 23:46:30 - Parsed command via fallback: right
+03-27 23:46:30 - Moving from (6, 6) to (7, 6)
+03-27 23:46:34 - 
+ === agent 5 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (3, 4) with 15 shots left. My goal is to avoid zombies and collaborate with humans. Moving right to (4, 4) seems a safe move as it doesn't lead to any immediate danger. I have not encountered any zombies or humans yet, so I will continue exploring.
+
+Command: right === 
+
+03-27 23:46:34 - Parsed command via regex: right
+03-27 23:46:34 - Moving from (3, 4) to (4, 4)
+03-27 23:46:39 - 
+ === agent 3 thought process to move LLM Raw Response:
+Reasoning: Currently at the bottom-right corner of the grid, position (7, 7). With 15 shots left, I can afford to shoot if necessary. Moving further away from the center increases the risk of encountering zombies. Moving up or down would lead to the edges of the grid, which might limit future movement options. Moving left would bring me closer to the center, but I still have enough shots to shoot if necessary. Moving right would also bring me closer to the center, but === 
+
+03-27 23:46:39 - Parsed command via fallback: shoot
+03-27 23:46:39 - Moving from (7, 7) to (7, 7)
+03-27 23:46:45 - 
+ === agent 6 thought process to move LLM Raw Response:
+Reasoning: Currently at (7, 6) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (7, 6) keeps me in the same position, which is not beneficial. Moving left to (6, 6) brings me closer to the center of the grid, which might be advantageous for collaboration. Moving up to (7, 7) places me at the top-right corner, which could be risky due to fewer humans nearby === 
+
+03-27 23:46:45 - Parsed command via fallback: right
+03-27 23:46:45 - Moving from (7, 6) to (0, 6)
+03-27 23:47:15 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
+03-27 23:47:26 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
+03-27 23:47:50 - === agent 3 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (2, 6) with 15 shots left. My goal is to avoid zombies and collaborate with humans. Moving right to (3, 6) keeps me in the center of the grid, avoiding immediate danger. Moving left to (1, 6) or down to (2, 5) would also keep me central, but moving up to (2, 7) would place me near the top of the grid, potentially making it === 
+ 
+
+03-27 23:47:50 - Parsed command via fallback: right
+03-27 23:47:50 - Moving from (2, 6) to (3, 6)
+03-27 23:47:56 - === agent 2 thought process to move LLM Raw Response:
+Reasoning: Currently at (3, 7) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (4, 7) keeps me in the same row, reducing the risk of encountering zombies. Moving left to (2, 7) or down to (3, 6) would also keep me in the same row, but moving up to (3, 0) would take me out of the grid, which is not possible. === 
+ 
+
+03-27 23:47:56 - Parsed command via fallback: right
+03-27 23:47:56 - Moving from (3, 7) to (4, 7)
+03-27 23:48:00 - === agent 4 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (5, 6) with 15 shots left. My goal is to avoid zombies and collaborate with humans. I need to be cautious and avoid unnecessary risks. Moving right to (6, 6) seems like a safe move as it doesn't lead me to any immediate danger. 
+
+Command: right === 
+ 
+
+03-27 23:48:00 - Parsed command via regex: right
+03-27 23:48:00 - Moving from (5, 6) to (6, 6)
+03-27 23:48:03 - === agent 5 thought process to move LLM Raw Response:
+Reasoning: Currently, I am positioned at (5, 4) with 15 shots left. My goal is to survive and collaborate with humans. I need to avoid zombies and make strategic moves. Moving right to (6, 4) seems like a safe move as it doesn't lead to any immediate danger. 
+
+Command: right === 
+ 
+
+03-27 23:48:03 - Parsed command via regex: right
+03-27 23:48:03 - Moving from (5, 4) to (6, 4)
+03-27 23:48:09 - === agent 2 thought process to move LLM Raw Response:
+Reasoning: Currently positioned at (4, 7) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (5, 7) keeps me in the same row, reducing the risk of encountering zombies. Moving left to (3, 7) or up/down would either lead me closer to the edge of the grid or potentially encounter zombies. Shooting is not an option at the moment.
+
+Command: right === 
+ 
+
+03-27 23:48:09 - Parsed command via regex: right
+03-27 23:48:09 - Moving from (4, 7) to (5, 7)
+03-27 23:48:15 - === agent 4 thought process to move LLM Raw Response:
+Reasoning: Currently at (6, 6) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (7, 6) will place me at the edge of the grid, limiting future movement options. Moving left to (5, 6) or down to (6, 5) keeps me within the central area of the grid, allowing more movement options. Moving up to (6, 7) also keeps me in the central area === 
+ 
+
+03-27 23:48:15 - Parsed command via fallback: right
+03-27 23:48:15 - Moving from (6, 6) to (7, 6)
+03-27 23:48:18 - === agent 3 thought process to move LLM Raw Response:
+Reasoning: Currently, I am at (3, 6) with 15 shots left. My goal is to avoid zombies and collaborate with humans. I need to move carefully to avoid running out of shots. Moving right to (4, 6) seems a safe move as it doesn't lead to any immediate danger. 
+
+Command: right === 
+ 
+
+03-27 23:48:18 - Parsed command via regex: right
+03-27 23:48:18 - Moving from (3, 6) to (4, 6)
+03-27 23:48:24 - === agent 5 thought process to move LLM Raw Response:
+Reasoning: Currently positioned at (6, 4) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (7, 4) will place me in a corner, making it harder to escape if surrounded. Moving left to (5, 4) or up to (6, 5) keeps me in the center, allowing more escape routes. Moving down to (6, 3) also keeps me central but slightly closer to the bottom === 
+ 
+
+03-27 23:48:24 - Parsed command via fallback: right
+03-27 23:48:24 - Moving from (6, 4) to (7, 4)
+03-27 23:48:30 - === agent 3 thought process to move LLM Raw Response:
+Reasoning: Currently at (4, 6) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (5, 6) keeps me in the center, avoiding immediate danger. Moving left to (3, 6) or down to (4, 5) also keeps me central. Moving up to (4, 7) might be beneficial for collaboration with humans, but it exposes me to more risk. Staying central is a safer choice === 
+ 
+
+03-27 23:48:30 - Parsed command via fallback: right
+03-27 23:48:30 - Moving from (4, 6) to (5, 6)
+03-27 23:48:35 - === agent 5 thought process to move LLM Raw Response:
+Reasoning: Currently at (7, 4) with 15 shots left, I need to avoid zombies and collaborate with humans. Moving right to (7, 4) keeps me in the same position, which is not helpful. Moving left to (6, 4) brings me closer to the center of the grid, which might be advantageous for collaboration. Moving up to (7, 5) also keeps me in the same vertical column, which is not helpful. Moving down to === 
+ 
+
+03-27 23:48:35 - Parsed command via fallback: right
+03-27 23:48:35 - Moving from (7, 4) to (0, 4)
+03-27 23:48:40 - === agent 4 thought process to move LLM Raw Response:
+Reasoning: Currently at the bottom right corner of the grid, position (7, 6) with 15 shots left. The goal is to avoid zombies and collaborate with humans. Moving 'up' to (7, 7) would place me at the top right corner, which is a strategic position to avoid zombies and potentially encounter humans. Moving 'down' to (7, 5) would place me closer to the center, increasing the chance of encountering humans but also increasing the risk === 
+ 
+
+03-27 23:48:40 - Parsed command via fallback: right
+03-27 23:48:40 - Moving from (7, 6) to (0, 6)
+03-27 23:49:14 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)
+03-27 23:49:25 - 0 _CudaDeviceProperties(name='NVIDIA GeForce RTX 4060 Laptop GPU', major=8, minor=9, total_memory=8187MB, multi_processor_count=24, uuid=4a9d8bfb-ced9-81b6-c485-4e4f395af629, L2_cache_size=32MB)

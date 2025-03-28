@@ -13,9 +13,10 @@ import matplotlib.pyplot as plt
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import datetime
+import re
 
 def log_message(*args, **kwargs):
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now().strftime("%m-%d %H:%M:%S")
     message = ' '.join(map(str, args))
     formatted_message = f"{timestamp} - {message}"
     print(formatted_message, **kwargs)
@@ -73,10 +74,10 @@ class OutbreakAgent(mesa.Agent):
     
 
     def talkwith(self,otherAgentId,otherMsg):
+
+        """This is invoked by other agents in the model when they want to talk to you"""
         print(self.chatHistory)
         experienced = "an Experienced" if self.isExperienced else "New to the environment"
-        """This is invoked by other agents in the model when they want to talk to you"""
-
         prompt = f"""You are {experienced} human in a zombie apocylypse, you have met another human with id ${otherAgentId} and they tell you ${otherMsg} respond:"""
 
         context_msg = f"Agent {self.unique_id} in {self.model.grid.width}x{self.model.grid.height} zombie world. Step {self.model.steps}."
@@ -94,26 +95,22 @@ class OutbreakAgent(mesa.Agent):
 
 
     def step(self):
-        current_step = self.model.steps 
-        # check what agents are in current cell
+
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
-        current_perceptions = [] 
         if self.isDead:
             return
         if not self.isZombie:
             for cellmate in cellmates:
                 if cellmate == self:  # Skip if the cellmate is the agent itself
                     continue
-                probability_to_talk = 0.1
+                probability_to_talk = 0.5
                 if not cellmate.isZombie and not self.isDead:
-                    # ask it a question 
                     if random.random() < probability_to_talk:
-                        print(f"chat history from action item  {self.chatHistory} \n")
+                        print(f"\n ======chat history from action item of agent {self.unique_id}  {self.chatHistory}")
                         experienced = "an Experienced" if self.isExperienced else "New to the environment"
-                        log_message(f"\n === STEP {current_step} === \n")
+                        log_message(f"\n === STEP {self.model.step} === \n")
                         log_message(f"chat between {self.unique_id} and {cellmate.unique_id} at {self.pos} ")
-                        prompt = f"""You are {experienced} human in a zombie apocylypse, you have met the other human named ${cellmate.unique_id} start a conversation with them based on your message history and previous conversations:"""
-
+                        prompt = f"""You are {experienced} human in a zombie apocylypse, you have met the other human named ${cellmate.unique_id} start a conversation with them based on your message history and previous conversations be  very breif:"""
                         context_msg = f"Agent {self.unique_id} in {self.model.grid.width}x{self.model.grid.height} zombie world. Step {self.model.steps}."
                         memory_msg = f"Chat history: {"".join(self.chatHistory)}" 
 
@@ -126,19 +123,17 @@ class OutbreakAgent(mesa.Agent):
                         ans = cellmate.talkwith(str(self.unique_id),question)
                         print(cellmate.unique_id)
                         log_message("Answer by: "+ str(cellmate.unique_id) + " " + ans)
-
                         # append the other agent response to chat history
                         self.chatHistory.append(f"Agent {cellmate.unique_id} response: {ans}")
                         print(self.chatHistory)
-                        possible_steps = self.model.grid.get_neighborhood(
-                        self.pos,
-                        moore=True,
-                        include_center=False)
-                        new_position = self.random.choice(possible_steps)
-                        self.model.grid.move_agent(self, new_position)
-                        self.move_intelligently(current_perceptions)
-            else:
-                self.move_randomly()
+                        self.handle_death_and_disease_cellmates() # in both cases handle death and disease
+        
+            self.move_intelligently() # move intelligenlty even if you didn't talk
+        # if it's zombie, then move randomly
+        else:
+            self.handle_death_and_disease_cellmates() # in both cases handle death and disease
+            self.move_randomly()
+        
 
     def move_randomly(self):
         possible_steps = self.model.grid.get_neighborhood(
@@ -146,10 +141,24 @@ class OutbreakAgent(mesa.Agent):
             moore=True,
             include_center=False)
         new_position = self.random.choice(possible_steps)
-        self.model.grid.move_agent(self, new_position)
 
-    
-    def infect_cellmates(self):
+    def execute_command(self, command):
+        x, y = self.pos
+        width = self.model.grid.width
+        height = self.model.grid.height
+        move_map = {
+            "right": ((x+1) % width, y),
+            "left": ((x-1) % width, y),
+            "up": (x, (y+1) % height),
+            "down": (x, (y-1) % height),
+            "stay": (x, y)
+        }
+        
+        new_pos = move_map.get(command, (x, y))
+        log_message(f"Moving from {(x,y)} to {new_pos}")
+        self.model.grid.move_agent(self, new_pos)
+
+    def handle_death_and_disease_cellmates(self):
         if self.isDead:
             return
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
@@ -205,24 +214,38 @@ class OutbreakAgent(mesa.Agent):
             }
             return potential
 
-    def move_intelligently(self, perceptions):
-
+    def move_intelligently(self):
+        potential_moves = self.get_potential_moves()
         prompt = f"""You are an agent exploring a {self.model.grid.width}x{self.model.grid.height} grid world (coordinates from (0,0) to ({self.model.grid.width-1},{self.model.grid.height-1})).
-                    Goal: survive zombie world
+                    Goal: survive zombie world and collaborate with humans. Avoid filler words, and share your knowledge based on your chat history. act intelligently you are short on time don't have time to chat too much
                     Current State:
                     - Position: {self.pos}
                    
                     - Shots left: {str(self.shots_left)}
 
-                    Possible Moves from {self.pos}:
-               
+                    Possible Moves from {self.pos}: {potential_moves}
 
+                    base your logic on chat history: {self.chatHistory} and interacting with other agetns
                     Format your response EXACTLY like this:
-                    Reasoning: [Your detailed analysis of perceptions, visited cells, potential risks/rewards of neighbors, and strategic choice]
+                    Reasoning: [Your brief and logical analysis of perceptions, visited cells, potential risks/rewards of neighbors, and strategic choice]
                     Command: [ONLY one of: right | left | up | down | shoot right | shoot left | shoot up | shoot down]""" 
         
 
-        self.move_randomly() # move randomly for now, will change it
+        context_msg = f"Agent {self.unique_id} in {self.model.grid.width}x{self.model.grid.height} Zombie World. Step {self.model.steps}."
+        memory_msg = f"" 
+
+        ans = self.model.PromptModel(
+            context_msg,
+            memory_msg, 
+            prompt
+        )
+        log_message(f"=== agent {self.unique_id} thought process to move LLM Response:\n{ans} === \n \n")
+
+    
+        command = self.parse_command(ans)
+      
+
+        self.execute_command(command)
         
     def parse_command(self, response):
         """
@@ -272,7 +295,7 @@ class OutBreakModel(mesa.Model):
         # Create agents
         for i in range(self.total_agents):
             agent = OutbreakAgent(self)
-            if i>0.9 * self.total_agents:
+            if i>(0.5 * self.total_agents): # half of the world is zombie
                 agent.isZombie=True
 
             # Add the agent to a random grid cell
@@ -295,9 +318,9 @@ class OutBreakModel(mesa.Model):
                 model_path,
                 device_map="auto",  # Change this line
                 torch_dtype="auto",
-                trust_remote_code=True,
+                trust_remote_code=True
                 # You might combine this with load_in_4bit=True or load_in_8bit=True
-                load_in_4bit=True
+                ,load_in_4bit=True
             )
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
 
@@ -314,9 +337,9 @@ class OutBreakModel(mesa.Model):
         
         #lower temperature generally more predictable results, you can experiment with this
         generation_args = {
-            "max_new_tokens": 50,
+            "max_new_tokens": 100,
             "return_full_text": False,
-            "temperature": 0.0,
+            "temperature": 0.2,
             "do_sample": False,
         }
 
@@ -390,7 +413,7 @@ def agent_portrayal(agent):
     
     return portrayal
 
-outBreak_model = OutBreakModel(10, 10, 10)
+outBreak_model = OutBreakModel(10, 5, 5)
 
 SpaceGraph = make_space_component(agent_portrayal)
 HumansPlot = make_plot_component("Human Count")
@@ -400,18 +423,8 @@ MutantZombieCountPlot = make_plot_component("Mutant Zombie Count")
 DeathCountPlot = make_plot_component("Deaths")
 
 
-# Run simulaiton for csv
-model = OutBreakModel(totalAgents=4, width=10, height=10)
-num_steps = 500
-for i in range(num_steps):
-    model.step()
 
-
-results_df = model.datacollector.get_model_vars_dataframe()
-
-# Save to CSV
-results_df.to_csv("simulation_results.csv", index=False)
-print("Simulation results saved to simulation_results.csv")
+outBreak_model = OutBreakModel(10,8,8)
 
 page = SolaraViz(
     outBreak_model,
